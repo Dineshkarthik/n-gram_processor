@@ -23,12 +23,18 @@ $ spark-submit ngrams_collector.py
 
     path: '/path/to/your/input/'
     outpath: '/path/to/your/output/'
+    function: 'frequency'
     order: 'right'
     distance: 3
     selector: 'python'
 
  - path - path to your input directory
  - outpath - where you wanted your output files
+ - function - `frequency` or `words`
+	 - frequency - returns frequency of words in particular distance.
+		  ex: [('programming', 3), ('functions', 2)]
+	 - words - returns set of words present in specified distance.
+		 ex: ['python programming language', 'python function programming']
  - order - `left` or `right` 
 	 - left - from left to right
 	 - right - from right to left
