@@ -1,0 +1,5 @@
+path: '/path/to/your/input/'
+outpath: '/path/to/your/output/'
+order: 'right'
+distance: 3
+selector: 'python'
