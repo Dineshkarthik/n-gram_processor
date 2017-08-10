@@ -1,5 +1,6 @@
 path: '/path/to/your/input/'
 outpath: '/path/to/your/output/'
+function: 'frequency'
 order: 'right'
 distance: 3
 selector: 'python'
