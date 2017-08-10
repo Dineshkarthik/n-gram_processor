@@ -13,11 +13,11 @@ config = yaml.safe_load(f)
 f.close()
 
 
-def collect_words(filename, selected_index, selector_index, selector,
+def get_frequency(filename, selected_index, selector_index, selector,
                   distance):
-    """Using ngram get required set of words.
+    """Using ngram get required words and frequency.
 
-    Check given text file for words present in a specigic order at specific
+    Check given text file for words present in a specific order at specific
     distance from a word in n-gram.
 
     Parameters
@@ -28,6 +28,8 @@ def collect_words(filename, selected_index, selector_index, selector,
         Index in ngram where the required word will be present.
     selector_index: int
         Index in ngram where the selector will be present.
+    selector: string
+        Word from which the distance is calculated.
     distance: int
         Distance between selector and the word ot be selected
 
@@ -45,6 +47,36 @@ def collect_words(filename, selected_index, selector_index, selector,
     return counters
 
 
+def get_words(filename, selector, distance, selector_index):
+    """Using ngram get required set of words.
+
+    Check given text file for words present in a specific order at specific
+    distance from a word in n-gram.
+
+    Parameters
+    ----------
+    filename: string
+        Name of the text file to be processed.
+    selector: string
+        Word from which the distance is calculated.
+    distance: int
+        Distance between selector and the word ot be selected
+    selected_index: int
+        Index in ngram where the required word will be present.
+
+    Returns
+    -------
+    list
+        contains seelcted set of words(part of sentence).
+    """
+    textfile = sc.textFile(filename)
+    tokens = textfile.map(lambda x: x.lower()).map(str.split)
+    words = tokens.flatMap(sliding_window(distance)).filter(
+        lambda x: x[selector_index] == selector).map(
+            lambda x: ' '.join(x)).collect()
+    return words
+
+
 if config["order"] == 'right':
     selector_index, selected_index = 0, config["distance"] - 1
 else:
@@ -54,8 +86,12 @@ for root, dirs, files in os.walk(config['path']):
     for file in files:
         filename = os.path.join(root, file)
         print("Processing: " + filename)
-        result = collect_words(filename, selected_index, selector_index,
-                               config["selector"], config["distance"])
+        if config["function"] == 'frequency':
+            result = get_frequency(filename, selected_index, selector_index,
+                                   config["selector"], config["distance"])
+        else:
+            result = get_words(filename, config["selector"],
+                               config["distance"], selector_index)
         if len(result) > 0:
             out_ = filename.replace(config['path'], '')
             outfile = os.path.splitext(os.path.join(config['outpath'], out_))[
