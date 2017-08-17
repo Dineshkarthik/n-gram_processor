@@ -4,3 +4,4 @@ function: 'frequency'
 order: 'right'
 distance: 3
 selector: 'python'
+case_sensitive: 'yes'
