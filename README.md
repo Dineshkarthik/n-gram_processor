@@ -27,6 +27,7 @@ $ spark-submit ngrams_collector.py
     order: 'right'
     distance: 3
     selector: 'python'
+    case_sensitive: 'yes'
 
  - path - path to your input directory
  - outpath - where you wanted your output files
@@ -38,5 +39,6 @@ $ spark-submit ngrams_collector.py
  - order - `left` or `right` 
 	 - left - from left to right
 	 - right - from right to left
- - distance - position of the word to be seleceted
- - selector - word from which the distance need to be calculated. 
+ - distance - position of the word to be selected
+ - selector - word from which the distance need to be calculated.
+ - case_sensitive - `yes` or `no`, yes if texts are case sensitive else no.
