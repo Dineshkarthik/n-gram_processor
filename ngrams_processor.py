@@ -1,11 +1,15 @@
 """Pyspark Script to get count of words in a distance from selector."""
-from pyspark import SparkContext, SparkConf
+from pyspark import SparkConf
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import lit
+from pyspark.sql.types import StringType
 from toolz.curried import sliding_window
 import os
 import yaml
 
 conf = SparkConf().setAppName("ngramsCollector").setMaster("local")
-sc = SparkContext(conf=conf)
+spark = SparkSession.builder.config(conf=conf).getOrCreate()
+sc = spark.sparkContext
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 f = open(os.path.join(THIS_DIR, 'config.yaml'))
@@ -85,6 +89,9 @@ def get_words(filename, selector, distance, selector_index, case_sensitivity):
     return words
 
 
+overall_df = spark.createDataFrame([('', 0, '')],
+                                   ['value', 'count', 'filname']).limit(0)
+
 if config["order"] == 'right':
     selector_index, selected_index = 0, config["distance"] - 1
 else:
@@ -110,3 +117,23 @@ for root, dirs, files in os.walk(config['path']):
                 os.makedirs(os.path.dirname(outfile))
             with open(outfile, "w+") as file:
                 file.write(str(result))
+
+            if config["function"] == 'words':
+                temp_df = spark.createDataFrame(result, StringType())
+                temp_df = temp_df.groupBy(temp_df.value).count()
+                temp_df = temp_df.withColumn("filename", lit(filename))
+                overall_df = overall_df.union(temp_df)
+
+if config["function"] == 'words':
+    overall_df = overall_df.sort("value", ascending=True)
+    overall_df.coalesce(1).write.csv(
+        os.path.join(config['outpath'], "File-Wise Result"),
+        mode="overwrite",
+        header=True)
+
+    overall_df = overall_df.groupBy(overall_df.value).sum('count')
+    overall_df = overall_df.sort("value", ascending=True)
+    overall_df.coalesce(1).write.csv(
+        os.path.join(config['outpath'], "Overall Result"),
+        mode="overwrite",
+        header=True)
