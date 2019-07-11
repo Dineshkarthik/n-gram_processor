@@ -1,2 +1,2 @@
 toolz==0.8.2
-PyYAML==3.12
+PyYAML==5.1
