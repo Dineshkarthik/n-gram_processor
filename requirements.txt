@@ -1,2 +1,2 @@
-toolz==0.8.2
+toolz==0.10.0
 PyYAML==5.1
